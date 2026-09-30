@@ -20,16 +20,16 @@ export type PadDef = {
 };
 
 export const PADS: PadDef[] = [
-  { id: "airhorn", name: "Airhorn", key: "1", icon: Megaphone },
-  { id: "laser", name: "Laser", key: "2", icon: Zap },
-  { id: "boom", name: "Boom", key: "3", icon: Bomb },
-  { id: "coin", name: "Coin", key: "4", icon: Coins },
-  { id: "siren", name: "Siren", key: "5", icon: Siren },
-  { id: "whoosh", name: "Whoosh", key: "6", icon: Wind },
-  { id: "drop", name: "Drop", key: "7", icon: ArrowDown },
-  { id: "zap", name: "Zap", key: "8", icon: Sparkles },
-  { id: "alert", name: "Alert", key: "9", icon: Bell },
-  { id: "scratch", name: "Scratch", key: "0", icon: Disc3 },
+  { id: "airhorn", name: "AIRHORN", key: "1", icon: Megaphone },
+  { id: "crickets", name: "CRICKETS", key: "2", icon: Zap },
+  { id: "fat fart", name: "FATFART", key: "3", icon: Bomb },
+  { id: "whistle", name: "WHISTLE", key: "4", icon: Coins },
+  { id: "ripscream1", name: "SCREAM1", key: "5", icon: Siren },
+  { id: "ripscream2", name: "SCREAM2", key: "6", icon: Wind },
+  { id: "ripfuck", name: "FUCK", key: "7", icon: ArrowDown },
+  { id: "ripbitch", name: "BITCH", key: "8", icon: Sparkles },
+  { id: "dayne1", name: "DAYNELAUGH1", key: "9", icon: Bell },
+  { id: "dayne2", name: "DAYNELAUGH2", key: "0", icon: Disc3 },
 ];
 
 export const KEY_TO_INDEX: Record<string, number> = {
