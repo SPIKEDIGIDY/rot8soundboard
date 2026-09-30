@@ -1,0 +1,193 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #000000;
+  --color-fg: #c8ff00;
+  --color-lime: #c8ff00;
+  --color-lime-dim: #6e8c12;
+  --color-ink: #000000;
+  --font-sans: "Outfit", system-ui, sans-serif;
+  --font-display: "Chivo Mono", ui-monospace, monospace;
+}
+
+@layer base {
+  html,
+  body {
+    margin: 0;
+    min-height: 100%;
+    background: var(--color-bg);
+    color: var(--color-fg);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    line-height: 1.5;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  ::selection {
+    background: var(--color-lime);
+    color: var(--color-ink);
+  }
+}
+
+.deck-range {
+  width: 100%;
+  height: 1.75rem;
+  accent-color: var(--color-lime);
+  background: transparent;
+}
+
+.deck-range:disabled {
+  opacity: 0.35;
+}
+
+.pad {
+  position: relative;
+  display: flex;
+  aspect-ratio: 1;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border: 2px solid var(--color-lime);
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-lime);
+  padding: 0.75rem 0.5rem 1.6rem;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.pad:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-lime) 12%, transparent);
+}
+
+.pad:active:not(:disabled),
+.pad[data-live="true"] {
+  background: var(--color-lime);
+  color: var(--color-ink);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--color-lime) 45%, transparent);
+}
+
+.pad:focus-visible,
+.transport:focus-visible,
+.corner:focus-visible,
+.fx-toggle:focus-visible {
+  outline: 2px solid var(--color-lime);
+  outline-offset: 3px;
+}
+
+.pad:disabled {
+  opacity: 0.4;
+}
+
+.transport {
+  display: inline-flex;
+  min-height: 4rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 2px solid var(--color-lime);
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-lime);
+  padding: 0 1rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.transport:hover {
+  background: color-mix(in srgb, var(--color-lime) 12%, transparent);
+}
+
+.transport:active,
+.transport[data-hot="true"] {
+  background: var(--color-lime);
+  color: var(--color-ink);
+}
+
+.corner {
+  display: inline-flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--color-lime);
+  border-radius: 0;
+  background: var(--color-bg);
+  color: var(--color-lime);
+}
+
+.corner:hover {
+  background: var(--color-lime);
+  color: var(--color-ink);
+}
+
+.fx-toggle {
+  min-width: 4.25rem;
+  min-height: 2.75rem;
+  border: 2px solid var(--color-lime);
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-lime);
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.fx-toggle[aria-pressed="true"] {
+  background: var(--color-lime);
+  color: var(--color-ink);
+}
+
+.fx-panel {
+  border: 2px solid var(--color-lime);
+  padding: 0.75rem 1rem 0.25rem;
+}
+
+.dock {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 767px) {
+  .deck-scroll {
+    padding-bottom: 7.5rem;
+  }
+
+  .deck-scroll[data-fx="open"] {
+    padding-bottom: 24rem;
+  }
+
+  .dock {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 20;
+    margin-top: 0;
+    background: var(--color-bg);
+    border-top: 2px solid var(--color-lime);
+    padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pad,
+  .transport {
+    transition: none;
+  }
+}
