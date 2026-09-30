@@ -1,5 +1,6 @@
 import {
   ArrowDown,
+  AudioLines,
   Bell,
   Bomb,
   Coins,
@@ -32,25 +33,51 @@ export const PADS: PadDef[] = [
   { id: "dayne2", name: "DAYNELAUGH2", key: "0", icon: Disc3 },
 ];
 
-export const KEY_TO_INDEX: Record<string, number> = {
-  Digit1: 0,
-  Digit2: 1,
-  Digit3: 2,
-  Digit4: 3,
-  Digit5: 4,
-  Digit6: 5,
-  Digit7: 6,
-  Digit8: 7,
-  Digit9: 8,
-  Digit0: 9,
-  Numpad1: 0,
-  Numpad2: 1,
-  Numpad3: 2,
-  Numpad4: 3,
-  Numpad5: 4,
-  Numpad6: 5,
-  Numpad7: 6,
-  Numpad8: 7,
-  Numpad9: 8,
-  Numpad0: 9,
-};
+const LAYOUT_KEY = "lime-soundboard-layout";
+const MAX_PADS = 30;
+
+const ICONS = new Map(PADS.map((pad) => [pad.id, pad]));
+
+export function createPad(count: number): PadDef {
+  return {
+    id: `extra-${crypto.randomUUID()}`,
+    name: `PAD ${count}`,
+    key: "",
+    icon: AudioLines,
+  };
+}
+
+export function loadLayout(): PadDef[] | null {
+  try {
+    const raw = localStorage.getItem(LAYOUT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed) || parsed.length < 1 || parsed.length > MAX_PADS) return null;
+    const pads: PadDef[] = [];
+    for (const row of parsed) {
+      if (!row || typeof row !== "object") return null;
+      const record = row as { id?: unknown; name?: unknown; key?: unknown };
+      const id = typeof record.id === "string" ? record.id : "";
+      const name = typeof record.name === "string" ? record.name.slice(0, 24) : "";
+      const key = typeof record.key === "string" ? record.key.slice(0, 1) : "";
+      if (!id || !name) return null;
+      const known = ICONS.get(id);
+      pads.push({
+        id,
+        name,
+        key: known ? known.key : key,
+        icon: known?.icon ?? AudioLines,
+      });
+    }
+    return pads;
+  } catch {
+    return null;
+  }
+}
+
+export function saveLayout(pads: PadDef[]) {
+  const slim = pads.map((pad) => ({ id: pad.id, name: pad.name, key: pad.key }));
+  localStorage.setItem(LAYOUT_KEY, JSON.stringify(slim));
+}
+
+export { MAX_PADS };

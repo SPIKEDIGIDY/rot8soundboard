@@ -3,7 +3,7 @@ import { RotateCcw, SlidersHorizontal, Square, Upload, Volume2 } from "lucide-re
 import { renderBuiltins } from "@/lib/sound/builtins";
 import { getDeck } from "@/lib/sound/engine";
 import { FX_ROWS, defaultFx, loadSettings, saveSettings, type FxState } from "@/lib/sound/fx";
-import { KEY_TO_INDEX, PADS } from "@/lib/sound/pads";
+import { MAX_PADS, PADS, createPad, loadLayout, saveLayout, type PadDef } from "@/lib/sound/pads";
 import { decodeClip, deleteClip, readClips, writeClip } from "@/lib/sound/storage";
 
 const MAX_BYTES = 8 * 1024 * 1024;
@@ -14,11 +14,13 @@ function clipLabel(fileName: string) {
 }
 
 export function Soundboard() {
+  const [pads, setPads] = useState<PadDef[]>(PADS);
   const [builtins, setBuiltins] = useState<AudioBuffer[] | null>(null);
   const [customs, setCustoms] = useState<(AudioBuffer | null)[]>(() => Array(PADS.length).fill(null));
   const [names, setNames] = useState(() => PADS.map((pad) => pad.name));
   const [live, setLive] = useState<Record<number, number>>({});
   const [fxOpen, setFxOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [fx, setFx] = useState<FxState>(defaultFx);
   const [volume, setVolume] = useState(0.85);
   const [hydrated, setHydrated] = useState(false);
@@ -52,12 +54,15 @@ export function Soundboard() {
       setVolume(saved.volume);
     }
     let cancel = false;
+    const layout = loadLayout();
+    const nextPads = layout ?? PADS;
+    setPads(nextPads);
     readClips()
       .then(async (stored) => {
-        const nextBuffers = Array<AudioBuffer | null>(PADS.length).fill(null);
-        const nextNames = PADS.map((pad) => pad.name);
+        const nextBuffers = Array<AudioBuffer | null>(nextPads.length).fill(null);
+        const nextNames = nextPads.map((pad) => pad.name);
         await Promise.all(
-          PADS.map(async (pad, index) => {
+          nextPads.map(async (pad, index) => {
             const clip = stored.get(pad.id);
             if (!clip) return;
             try {
@@ -92,6 +97,11 @@ export function Soundboard() {
   }, [fx, volume, hydrated]);
 
   useEffect(() => {
+    if (!hydrated) return;
+    saveLayout(pads);
+  }, [pads, hydrated]);
+
+  useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.repeat) return;
       const target = event.target;
@@ -101,8 +111,9 @@ export function Soundboard() {
         stopAll();
         return;
       }
-      const index = KEY_TO_INDEX[event.code];
-      if (index === undefined) return;
+      const digit = event.code.startsWith("Digit") || event.code.startsWith("Numpad") ? event.code.slice(-1) : "";
+      const index = pads.findIndex((pad) => pad.key === digit);
+      if (!digit || index < 0) return;
       event.preventDefault();
       void play(index);
     };
@@ -111,12 +122,18 @@ export function Soundboard() {
   });
 
   function bufferAt(index: number) {
-    return customs[index] ?? builtins?.[index] ?? null;
+    const id = pads[index]?.id;
+    const builtinIndex = PADS.findIndex((pad) => pad.id === id);
+    const builtin = builtinIndex < 0 ? null : builtins?.[builtinIndex];
+    return customs[index] ?? builtin ?? null;
   }
 
   async function play(index: number) {
     const buffer = bufferAt(index);
-    if (!buffer) return;
+    if (!buffer) {
+      setError("Upload a sound onto this pad first.");
+      return;
+    }
     const token = gen.current;
     setError(null);
     try {
@@ -182,7 +199,7 @@ export function Soundboard() {
         next[index] = name;
         return next;
       });
-      await writeClip(PADS[index].id, { name, data });
+      await writeClip(pads[index].id, { name, data });
       setError(null);
     } catch {
       setError("That file could not be played. Try wav, mp3, or ogg.");
@@ -197,14 +214,34 @@ export function Soundboard() {
     });
     setNames((current) => {
       const next = [...current];
-      next[index] = PADS[index].name;
+      next[index] = pads[index].name;
       return next;
     });
     try {
-      await deleteClip(PADS[index].id);
+      await deleteClip(pads[index].id);
     } catch {
       setError("The built-in is back, but the saved file could not be deleted.");
     }
+  }
+
+  function addPad() {
+    if (pads.length >= MAX_PADS) return;
+    const pad = createPad(pads.length + 1);
+    setPads((current) => [...current, pad]);
+    setCustoms((current) => [...current, null]);
+    setNames((current) => [...current, pad.name]);
+  }
+
+  function removePad() {
+    if (pads.length <= 1) return;
+    const last = pads[pads.length - 1];
+    setPads((current) => current.slice(0, -1));
+    setCustoms((current) => current.slice(0, -1));
+    setNames((current) => current.slice(0, -1));
+    setLive({});
+    void deleteClip(last.id).catch(() => {
+      setError("The pad is gone, but its saved file could not be deleted.");
+    });
   }
 
   const fxHot = FX_ROWS.some((row) => fx[row.id].on);
@@ -217,11 +254,43 @@ export function Soundboard() {
     >
       <header className="mb-4 flex flex-col gap-3 border-b border-lime pb-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="font-display text-xs tracking-widest text-lime-dim">10 PADS</p>
+          <p className="font-display text-xs tracking-widest text-lime-dim">{pads.length} PADS</p>
           <h1 className="font-display text-3xl font-bold tracking-widest">LIME DECK</h1>
           <p className="text-sm text-lime-dim">Keys 1–0 play. Escape cuts the output.</p>
         </div>
-        <label className="flex min-w-0 items-center gap-3 md:w-64">
+        <div className="flex w-full flex-col gap-2 md:w-64">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              className="pad-edit"
+              aria-expanded={editOpen}
+              aria-pressed={editOpen}
+              onClick={() => setEditOpen((open) => !open)}
+            >
+              PADS
+            </button>
+            {editOpen ? (
+              <>
+                <button
+                  type="button"
+                  className="pad-edit"
+                  disabled={pads.length >= MAX_PADS}
+                  onClick={addPad}
+                >
+                  ADD
+                </button>
+                <button
+                  type="button"
+                  className="pad-edit"
+                  disabled={pads.length <= 1}
+                  onClick={removePad}
+                >
+                  REMOVE
+                </button>
+              </>
+            ) : null}
+          </div>
+          <label className="flex min-w-0 items-center gap-3">
           <Volume2 className="size-5 shrink-0" aria-hidden="true" />
           <span className="font-display text-xs tracking-widest">VOL</span>
           <input
@@ -236,6 +305,7 @@ export function Soundboard() {
             onChange={(event) => setVolume(Number(event.target.value))}
           />
         </label>
+        </div>
       </header>
 
       <p className="mb-3 min-h-6 text-sm text-lime-dim" role="status">
@@ -247,7 +317,7 @@ export function Soundboard() {
       </p>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-        {PADS.map((pad, index) => {
+        {pads.map((pad, index) => {
           const Icon = pad.icon;
           const custom = customs[index] !== null;
           const label = custom && names[index] ? names[index] : pad.name;
