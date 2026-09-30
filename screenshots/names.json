@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Lime Soundboard",
+      "hasCanvas": false,
+      "bodyTextLen": 195,
+      "bodyTextHash": "9273e3d8d4951569aeaf38cec9cd8fe8512df1acc8bb99003f26c356ec5b16e1",
+      "bodyTextPrefix": "10 PADS LIME DECK Keys 1–0 play. Escape cuts the output. VOL War",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/names.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Lime Soundboard",
+      "hasCanvas": false,
+      "bodyTextLen": 240,
+      "bodyTextHash": "5aee1b004a6f3bce85182e92801c523bb0623c4351211a3d0271dca5e840694b",
+      "bodyTextPrefix": "10 PADS LIME DECK Keys 1–0 play. Escape cuts the output. VOL Upl",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/names-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/names.json"
+}

@@ -250,6 +250,7 @@ export function Soundboard() {
         {PADS.map((pad, index) => {
           const Icon = pad.icon;
           const custom = customs[index] !== null;
+          const label = custom && names[index] ? names[index] : pad.name;
           return (
             <div key={pad.id} className="relative">
               <button
@@ -258,13 +259,13 @@ export function Soundboard() {
                 data-live={live[index] ? "true" : "false"}
                 disabled={!ready}
                 aria-keyshortcuts={pad.key}
-                aria-label={`Play ${names[index]}`}
+                aria-label={`Play ${label}`}
                 onClick={() => void play(index)}
               >
                 <span className="absolute top-2 left-2 text-xs tracking-widest">{pad.key}</span>
                 <Icon className="size-7" aria-hidden="true" />
                 <span className="max-w-full truncate text-sm font-bold tracking-wide uppercase">
-                  {names[index]}
+                  {label}
                 </span>
               </button>
               <button
